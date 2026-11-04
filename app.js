@@ -1,5 +1,15 @@
 const $ = (id) => document.getElementById(id);
 
+const provinces = [["آذربایجان شرقی","تبریز",38.0962,46.2738,"Asia/Tehran"],["آذربایجان غربی","ارومیه",37.5527,45.0761,"Asia/Tehran"],["اردبیل","اردبیل",38.2498,48.2933,"Asia/Tehran"],["اصفهان","اصفهان",32.6546,51.668,"Asia/Tehran"],["البرز","کرج",35.84,50.9391,"Asia/Tehran"],["ایلام","ایلام",33.6374,46.4227,"Asia/Tehran"],["بوشهر","بوشهر",28.9234,50.8203,"Asia/Tehran"],["تهران","تهران",35.6892,51.389,"Asia/Tehran"],["چهارمحال و بختیاری","شهرکرد",32.3256,50.8644,"Asia/Tehran"],["خراسان جنوبی","بیرجند",32.8663,59.2211,"Asia/Tehran"],["خراسان رضوی","مشهد",36.2972,59.6067,"Asia/Tehran"],["خراسان شمالی","بجنورد",37.475,57.329,"Asia/Tehran"],["خوزستان","اهواز",31.3183,48.6706,"Asia/Tehran"],["زنجان","زنجان",36.6736,48.4787,"Asia/Tehran"],["سمنان","سمنان",35.5769,53.3921,"Asia/Tehran"],["سیستان و بلوچستان","زاهدان",29.4963,60.8629,"Asia/Tehran"],["فارس","شیراز",29.5918,52.5837,"Asia/Tehran"],["قزوین","قزوین",36.2688,50.0041,"Asia/Tehran"],["قم","قم",34.6416,50.8746,"Asia/Tehran"],["کردستان","سنندج",35.3149,46.9988,"Asia/Tehran"],["کرمان","کرمان",30.2839,57.0834,"Asia/Tehran"],["کرمانشاه","کرمانشاه",34.3142,47.065,"Asia/Tehran"],["کهگیلویه و بویراحمد","یاسوج",30.6682,51.5879,"Asia/Tehran"],["گلستان","گرگان",36.8427,54.4439,"Asia/Tehran"],["گیلان","رشت",37.2808,49.5832,"Asia/Tehran"],["لرستان","خرم‌آباد",33.4878,48.3558,"Asia/Tehran"],["مازندران","ساری",36.5633,53.0601,"Asia/Tehran"],["مرکزی","اراک",34.0917,49.6892,"Asia/Tehran"],["هرمزگان","بندرعباس",27.1865,56.2808,"Asia/Tehran"],["همدان","همدان",34.7989,48.515,"Asia/Tehran"],["یزد","یزد",31.8974,54.3569,"Asia/Tehran"]];
+const provinceSelect = document.getElementById("provinceSelect");
+provinces.forEach((p, index) => {
+  const option = document.createElement("option");
+  option.value = String(index);
+  option.textContent = p[1] + " — " + p[0];
+  if (p[1] === "تهران") option.selected = true;
+  provinceSelect.append(option);
+});
+
 const state = {
   city: { name: "تهران", country: "ایران", admin1: "استان تهران", latitude: 35.6892, longitude: 51.3890, timezone: "Asia/Tehran" },
   busy: false
@@ -10,10 +20,10 @@ const faDate = (iso, options = {}) => {
   return new Intl.DateTimeFormat("fa-IR", { weekday: "long", day: "numeric", month: "long", ...options }).format(d);
 };
 const faNumber = (n) => new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 0 }).format(Math.round(n));
-const fmtHour = (iso) => new Intl.DateTimeFormat("fa-IR", { hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+const fmtHour = (iso) => new Intl.DateTimeFormat("fa-IR", { hour: "2-digit", minute: "2-digit", timeZone: state.city.timezone || "Asia/Tehran" }).format(new Date(iso));
 const rangeLabel = (start, end) => {
   const a = new Date(start), b = new Date(end);
-  if (a.toDateString() === b.toDateString()) return `${faDate(start)}، حدود ${fmtHour(start)} تا ${fmtHour(end)}`;
+  if (faDate(start) === faDate(end)) return `${faDate(start)}، حدود ${fmtHour(start)} تا ${fmtHour(end)}`;
   return `${faDate(start)} تا ${faDate(end)}`;
 };
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -169,7 +179,7 @@ async function loadForecast() {
     const data=await response.json();
     const events=analyzeWeather(data);
     renderCards(events);
-    $("selectedCity").textContent=[state.city.name,state.city.admin1,state.city.country].filter(Boolean).join("، ");
+    $("selectedCity").textContent=`${state.city.name}، استان ${state.city.admin1}`;
     $("updatedAt").textContent=`به‌روزرسانی: ${new Intl.DateTimeFormat("fa-IR",{hour:"2-digit",minute:"2-digit"}).format(new Date())}`;
     setStatus("پیش‌بینی با موفقیت دریافت شد","ok");
   } catch(err) {
@@ -181,41 +191,11 @@ async function loadForecast() {
   }
 }
 
-async function searchCities() {
-  const q=$("cityInput").value.trim();
-  if(q.length<2){setStatus("نام شهر را کامل‌تر وارد کنید","error");return;}
-  $("searchBtn").disabled=true;
-  setStatus("در حال جست‌وجوی شهر…");
-  try{
-    const url=`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=fa&format=json`;
-    const res=await fetch(url);
-    if(!res.ok) throw new Error("جست‌وجوی شهر ناموفق بود");
-    const data=await res.json();
-    const results=data.results||[];
-    const host=$("suggestions");
-    host.innerHTML="";
-    if(!results.length){setStatus("شهری با این نام پیدا نشد","error");host.hidden=true;return;}
-    results.forEach(city=>{
-      const b=document.createElement("button");
-      b.className="suggestion";
-      b.type="button";
-      b.textContent=[city.name,city.admin1,city.country].filter(Boolean).join("، ");
-      b.addEventListener("click",()=>{
-        state.city={name:city.name,country:city.country,admin1:city.admin1,latitude:city.latitude,longitude:city.longitude,timezone:city.timezone};
-        host.hidden=true;
-        $("cityInput").value="";
-        loadForecast();
-      });
-      host.append(b);
-    });
-    host.hidden=false;
-    setStatus(`${faNumber(results.length)} نتیجه پیدا شد؛ شهر موردنظر را انتخاب کنید`,"ok");
-  }catch(err){setStatus(err.message,"error");}
-  finally{$("searchBtn").disabled=false;}
-}
-
-$("searchBtn").addEventListener("click",searchCities);
-$("cityInput").addEventListener("keydown",e=>{if(e.key==="Enter")searchCities();});
+provinceSelect.addEventListener("change", () => {
+  const p = provinces[Number(provinceSelect.value)];
+  state.city = { name:p[1], admin1:p[0], country:"ایران", latitude:p[2], longitude:p[3], timezone:p[4] };
+  $("selectedCity").textContent = `${p[1]}، استان ${p[0]}`;
+  loadForecast();
+});
 $("refreshBtn").addEventListener("click",loadForecast);
-document.addEventListener("click",e=>{if(!e.target.closest(".search-panel"))$("suggestions").hidden=true;});
 loadForecast();
