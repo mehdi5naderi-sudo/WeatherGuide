@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="راهنمای هوشمند هواشناسی هفت روز آینده با داده‌های Open-Meteo">
+  <title>WeatherGuide | راهنمای هوشمند هواشناسی</title>
+  <link rel="preconnect" href="https://api.open-meteo.com">
+  <link rel="preconnect" href="https://geocoding-api.open-meteo.com">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand-mark">☀</div>
+      <div>
+        <h1>WeatherGuide</h1>
+        <p>راهنمای هوشمند هواشناسی</p>
+      </div>
+      <span class="source-pill">Open-Meteo</span>
+    </header>
+    <section class="intro">
+      <div>
+        <span class="eyebrow">نگاهی به ۷ روز آینده</span>
+        <h2>مهم‌ترین اتفاقات جوی پیش‌رو</h2>
+        <p>به‌جای انبوه اعداد، فقط سه موضوع مهم هواشناسی را ببینید.</p>
+      </div>
+      <div class="weather-symbol" aria-hidden="true">🌤️</div>
+    </section>
+    <section class="search-panel">
+      <label for="cityInput">انتخاب شهر</label>
+      <div class="search-row">
+        <input id="cityInput" type="search" placeholder="نام شهر را وارد کنید؛ مثلاً تهران" autocomplete="off">
+        <button id="searchBtn" class="primary-btn">جست‌وجو</button>
+      </div>
+      <div id="suggestions" class="suggestions" hidden></div>
+      <div class="selected-row">
+        <span id="selectedCity">تهران، ایران</span>
+        <button id="refreshBtn" class="text-btn" type="button">↻ به‌روزرسانی</button>
+      </div>
+    </section>
+    <section class="status-line">
+      <span id="statusDot" class="status-dot"></span>
+      <span id="statusText" role="status">در انتظار دریافت پیش‌بینی…</span>
+      <span id="updatedAt" class="updated-at"></span>
+    </section>
+    <section class="results-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">خلاصه تحلیلی</span>
+          <h2>سه موضوع مهم‌تر</h2>
+        </div>
+        <span class="period-label">۷ روز آینده</span>
+      </div>
+      <div id="cards" class="cards" aria-live="polite">
+        <div class="loading-card">در حال آماده‌سازی گزارش هواشناسی…</div>
+      </div>
+      <p class="method-note">رتبه‌بندی بر اساس شدت پدیده، احتمال، تداوم و اثر احتمالی آن انجام می‌شود. این گزارش پیش‌بینی قطعی نیست.</p>
+    </section>
+    <footer>
+      <span>داده‌ها: Open-Meteo</span>
+      <a href="https://open-meteo.com/" target="_blank" rel="noopener">درباره منبع داده</a>
+      <span>نسخه آزمایشی ۰.۱</span>
+    </footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
