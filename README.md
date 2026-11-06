@@ -1,30 +1,28 @@
-# WeatherGuide
+# WeatherGuide — Tehran Weather Dashboard
 
-راهنمای هوشمند هواشناسی با نمایش سه موضوع مهم‌تر در هفت روز آینده، با داده‌های Open-Meteo.
+A Persian, responsive weather dashboard for Tehran, powered by Open-Meteo.
 
-## اجرای سریع
-این پروژه یک وب‌اپ ایستا است و نیاز به نصب وابستگی ندارد. کافی است `index.html` را با یک وب‌سرور ایستا یا GitHub Pages منتشر کنید. برای آزمایش محلی، از افزونه Live Server یا یک وب‌سرور محلی استفاده کنید.
+## Features
+- Current conditions: temperature, feels-like, humidity, dew point, pressure, cloud cover, precipitation, wind, gusts and visibility.
+- 24-hour hourly forecast.
+- 7-day daily forecast with high/low temperatures, precipitation chance, wind and weather codes.
+- Sunrise, sunset, daylight duration, moonrise and moonset.
+- UV index and solar radiation.
+- Air quality: US AQI / European AQI, PM2.5, PM10, ozone, NO2, SO2, CO, dust and aerosol optical depth when provided by the model.
+- Automatic weather alerts based on forecast thresholds.
+- Persian RTL interface and Tehran local time.
+- Manual refresh; weather and air quality requests run in parallel. Air quality failure does not block the weather dashboard.
 
-## امکانات نسخه ۰.۱
-- جست‌وجو و انتخاب شهر با Open-Meteo Geocoding API
-- پیش‌بینی ۷ روزه با Forecast API
-- تشخیص بارندگی/رعدوبرق، برف، باد شدید، گرما، سرما، تغییر محسوس دما و مه
-- ادغام پدیده‌های هم‌زمان مرتبط
-- رتبه‌بندی رویدادها بر اساس شدت، احتمال و تداوم
-- نمایش حداکثر سه موضوع؛ موارد غیرمهم به‌صورت مصنوعی ساخته نمی‌شوند
-- رابط فارسی و راست‌چین، بدون کلید API و بدون وابستگی نرم‌افزاری
-
-## ساختار
-- `index.html`: ساختار صفحه
-- `styles.css`: ظاهر واکنش‌گرا
-- `app.js`: جست‌وجوی شهر، دریافت داده و موتور تحلیل
-
-## منبع داده و شرایط استفاده
+## Data sources
 - Forecast API: https://open-meteo.com/en/docs
-- Geocoding API: https://open-meteo.com/en/docs/geocoding-api
-- داده رایگان Open-Meteo برای استفاده غیرتجاری در دسترس است. شرایط استفاده و الزام انتساب منبع را در وب‌سایت رسمی بررسی کنید.
+- Air Quality API: https://open-meteo.com/en/docs/air-quality-api
 
-## نکات مهم
-- امتیازهای رتبه‌بندی، heuristic نسخه اولیه هستند و احتمال رسمی خطر محسوب نمی‌شوند.
-- آستانه‌ها باید با آزمون روی شهرها و اقلیم‌های مختلف تنظیم شوند.
-- خروجی نسخه بعدی می‌تواند به شکل JSON استاندارد برای ساعت آنالوگ و ویجت ارائه شود.
+The app is static and can be hosted on GitHub Pages. No API key is required for non-commercial use under Open-Meteo's applicable terms. Always review the provider's current attribution and usage requirements.
+
+## Files
+- index.html — page structure
+- styles.css — responsive dashboard styling
+- app.js — Open-Meteo requests, rendering and alert rules
+
+## Notes
+Forecast and air-quality values are model estimates, not direct observations from every street or a substitute for official warnings. Some variables may be unavailable at certain times or locations; unavailable values are displayed as dashes.
