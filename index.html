@@ -1,45 +1,26 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101827">
-  <meta name="description" content="راهنمای هوشمند هواشناسی هفت روز آینده برای مراکز استان‌های ایران">
-  <title>WeatherGuide | راهنمای هوشمند هواشناسی</title>
-  <link rel="preconnect" href="https://api.open-meteo.com">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1424"><meta name="description" content="داشبورد جامع هواشناسی تهران بر پایه داده‌های Open-Meteo">
+<title>WeatherGuide | هواشناسی تهران</title>
+<link rel="preconnect" href="https://api.open-meteo.com"><link rel="preconnect" href="https://air-quality-api.open-meteo.com">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main class="shell">
-    <header class="topbar">
-      <div class="brand-mark">☀</div>
-      <div><h1>WeatherGuide</h1><p>راهنمای هوشمند هواشناسی</p></div>
-      <span class="source-pill">Open-Meteo</span>
-    </header>
-    <section class="intro">
-      <div><span class="eyebrow">پیش‌بینی ۷ روز آینده</span><h2>مهم‌ترین اتفاقات جوی</h2><p>سه موضوع مهم هواشناسی به ترتیب اهمیت</p></div>
-      <div class="weather-symbol" aria-hidden="true">🌤️</div>
-    </section>
-    <section class="search-panel">
-      <label for="provinceSelect">انتخاب مرکز استان</label>
-      <div class="search-row">
-        <select id="provinceSelect" aria-label="انتخاب مرکز استان ایران"></select>
-        <button id="refreshBtn" class="primary-btn" type="button">به‌روزرسانی</button>
-      </div>
-      <div class="selected-row"><span id="selectedCity">تهران، استان تهران</span><span class="province-count">۳۱ مرکز استان</span></div>
-    </section>
-    <section class="status-line">
-      <span id="statusDot" class="status-dot"></span>
-      <span id="statusText" role="status">در انتظار دریافت پیش‌بینی…</span>
-      <span id="updatedAt" class="updated-at"></span>
-    </section>
-    <section class="results-section">
-      <div class="section-heading"><div><span class="eyebrow">خلاصه تحلیلی</span><h2>سه موضوع مهم‌تر</h2></div><span class="period-label">۷ روز آینده</span></div>
-      <div id="cards" class="cards" aria-live="polite"><div class="loading-card">در حال آماده‌سازی گزارش هواشناسی…</div></div>
-      <p class="method-note">رتبه‌بندی بر اساس شدت، احتمال و تداوم پدیده‌هاست؛ پیش‌بینی قطعی نیست.</p>
-    </section>
-    <footer><span>داده‌ها: Open-Meteo</span><a href="https://open-meteo.com/" target="_blank" rel="noopener">منبع داده</a><span>نسخه ۰.۲</span></footer>
-  </main>
-  <script src="app.js"></script>
-</body>
-</html>
+<header class="header"><div class="brand"><div class="logo">☀</div><div><b>WeatherGuide</b><small>داشبورد جامع هواشناسی تهران</small></div></div><div class="head-actions"><span id="connection" class="connection">در حال اتصال…</span><button id="refresh" class="refresh" title="به‌روزرسانی داده‌ها">⟳ <span>به‌روزرسانی</span></button></div></header>
+<main class="container">
+<section class="hero">
+<div class="hero-main"><div class="eyebrow">وضعیت فعلی · تهران</div><div class="hero-temp"><span id="temp">--</span><small>°C</small><span id="weatherIcon" class="hero-icon">🌤️</span></div><h1 id="condition">در حال دریافت اطلاعات…</h1><p id="feels">دمای احساسی: --°</p><div class="hi-low"><span>بیشینه <b id="todayMax">--°</b></span><span>کمینه <b id="todayMin">--°</b></span></div></div>
+<div class="hero-side"><div class="date" id="dateNow">—</div><div class="location">📍 تهران، ایران</div><div class="sun-times"><div><span>طلوع خورشید</span><b id="sunrise">--:--</b></div><div><span>غروب خورشید</span><b id="sunset">--:--</b></div></div><div class="daylight" id="daylight">طول روز: —</div></div>
+</section>
+<section class="section"><div class="section-title"><div><span class="eyebrow">شرایط لحظه‌ای</span><h2>جزئیات هوا</h2></div><small id="weatherUpdated">—</small></div><div id="currentGrid" class="metric-grid"></div></section>
+<section class="section"><div class="section-title"><div><span class="eyebrow">روند کوتاه‌مدت</span><h2>پیش‌بینی ساعتی · ۲۴ ساعت آینده</h2></div><small>به وقت تهران</small></div><div id="hourly" class="hourly"></div></section>
+<section class="section"><div class="section-title"><div><span class="eyebrow">چشم‌انداز هفتگی</span><h2>پیش‌بینی ۷ روز آینده</h2></div></div><div id="daily" class="daily"></div></section>
+<section class="section"><div class="section-title"><div><span class="eyebrow">کیفیت هوا</span><h2>آلودگی و ذرات معلق</h2></div><small id="airUpdated">—</small></div><div id="airSummary" class="air-summary"></div><div id="airGrid" class="metric-grid"></div><p class="note">شاخص‌های کیفیت هوا، برآورد مدل CAMS هستند و ممکن است با ایستگاه‌های سنجش زمینی تفاوت داشته باشند.</p></section>
+<section class="section"><div class="section-title"><div><span class="eyebrow">تابش خورشید</span><h2>شاخص فرابنفش (UV)</h2></div></div><div id="uv" class="uv-panel"></div></section>
+<section class="section"><div class="section-title"><div><span class="eyebrow">تحلیل خودکار</span><h2>هشدارها و نکات مهم</h2></div></div><div id="alerts" class="alerts"></div></section>
+<section class="section"><div class="section-title"><div><span class="eyebrow">اطلاعات تکمیلی</span><h2>طلوع و غروب ماه و روشنایی روز</h2></div></div><div id="extra" class="metric-grid"></div></section>
+<footer><span>منبع هواشناسی: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></span><span>مدل‌های پیش‌بینی ممکن است با واقعیت اختلاف داشته باشند.</span><span id="lastUpdated">—</span></footer>
+</main><script src="app.js"></script>
+</body></html>
