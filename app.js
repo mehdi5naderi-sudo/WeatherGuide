@@ -20,7 +20,7 @@ const dirs=["شمال","شمال‌شرق","شرق","جنوب‌شرق","جنو�
 const direction=dirs[Math.round(windDir/45)%8];
 $("currentGrid").innerHTML=[
 metric("رطوبت نسبی",val(c.relative_humidity_2m,"%"),"درصد رطوبت هوا"),
-metric("نقطه شبنم",val(c.dew_point_2m,"°"),"دمای اشباع بخار آب"),
+metric("نقطه شبنم",val(h.dew_point_2m?.[0],"°"),"دمای اشباع بخار آب"),
 metric("سرعت باد",val(c.wind_speed_10m," km/h"),direction+" · "+val(windDir,"°")),
 metric("تندباد",val(c.wind_gusts_10m," km/h"),"بیشینه لحظه‌ای باد"),
 metric("فشار سطح دریا",val(c.pressure_msl," hPa"),"فشار تصحیح‌شده"),
@@ -59,7 +59,7 @@ if(min<=2)a.push(["هوای سرد","کمینه دما "+fa(min)+" درجه؛ پ
 if(gust>=50)a.push(["تندباد","سرعت تندباد ممکن است به "+fa(gust)+" کیلومتر بر ساعت برسد؛ اشیای سبک را ایمن کنید.","warn"]);
 if(rain>=50)a.push(["احتمال بارندگی","بیشترین احتمال بارش امروز "+fa(rain)+" درصد است.","warn"]);
 if(uv>=6)a.push(["تابش فرابنفش بالا","بیشینه UV برابر "+fa(uv)+" است؛ از ضدآفتاب و سایه استفاده کنید.","warn"]);
-if(d.current.visibility!=null&&d.current.visibility<2000)a.push(["کاهش دید","دید افقی کمتر از ۲ کیلومتر گزارش شده است؛ رانندگی با احتیاط.","warn"]);
+const vis=d.hourly.visibility?.[0];if(vis!=null&&vis<2000)a.push(["کاهش دید","دید افقی کمتر از ۲ کیلومتر گزارش شده است؛ رانندگی با احتیاط.","warn"]);
 if(!a.length)a.push(["شرایط جوی نسبتاً آرام","در داده‌های امروز آستانه هشدار مهمی شناسایی نشد. تغییرات ساعتی را دنبال کنید.","good"]);
 $("alerts").innerHTML=a.map(x=>'<div class="alert '+x[2]+'"><b>'+x[0]+'</b><p>'+x[1]+'</p></div>').join("");
 }
@@ -83,7 +83,7 @@ $("airUpdated").textContent="زمان داده: "+clock(c.time);
 async function load(){
 $("refresh").disabled=true;$("connection").textContent="در حال دریافت داده‌ها…";
 const weatherParams={latitude:LAT,longitude:LON,timezone:TZ,forecast_days:7,wind_speed_unit:"kmh",temperature_unit:"celsius",
-current:["temperature_2m","relative_humidity_2m","apparent_temperature","is_day","precipitation","rain","showers","snowfall","weather_code","cloud_cover","pressure_msl","surface_pressure","wind_speed_10m","wind_direction_10m","wind_gusts_10m","dew_point_2m","visibility"],
+current:["temperature_2m","relative_humidity_2m","apparent_temperature","is_day","precipitation","rain","showers","snowfall","weather_code","cloud_cover","pressure_msl","surface_pressure","wind_speed_10m","wind_direction_10m","wind_gusts_10m",],
 hourly:["temperature_2m","relative_humidity_2m","dew_point_2m","apparent_temperature","precipitation_probability","precipitation","rain","showers","snowfall","snow_depth","weather_code","pressure_msl","surface_pressure","cloud_cover","cloud_cover_low","cloud_cover_mid","cloud_cover_high","visibility","evapotranspiration","et0_fao_evapotranspiration","vapour_pressure_deficit","wind_speed_10m","wind_direction_10m","wind_gusts_10m","uv_index","uv_index_clear_sky","is_day","sunshine_duration","wet_bulb_temperature_2m","cape","freezing_level_height","boundary_layer_height","shortwave_radiation","direct_radiation","diffuse_radiation"],
 daily:["weather_code","temperature_2m_max","temperature_2m_min","temperature_2m_mean","apparent_temperature_max","apparent_temperature_min","sunrise","sunset","daylight_duration","sunshine_duration","uv_index_max","uv_index_clear_sky_max","precipitation_sum","rain_sum","showers_sum","snowfall_sum","precipitation_hours","precipitation_probability_max","wind_speed_10m_max","wind_gusts_10m_max","wind_direction_10m_dominant","shortwave_radiation_sum","et0_fao_evapotranspiration","moonrise","moonset"]};
 const airParams={latitude:LAT,longitude:LON,timezone:TZ,forecast_days:5,domains:"auto",current:["us_aqi","european_aqi","pm10","pm2_5","carbon_monoxide","nitrogen_dioxide","sulphur_dioxide","ozone","aerosol_optical_depth","dust","uv_index","uv_index_clear_sky"],hourly:["us_aqi","european_aqi","pm10","pm2_5","carbon_monoxide","nitrogen_dioxide","sulphur_dioxide","ozone","aerosol_optical_depth","dust","uv_index","uv_index_clear_sky"]};
