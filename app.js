@@ -1,5 +1,12 @@
 const $=id=>document.getElementById(id);
-const LAT=35.6892,LON=51.3890,TZ="Asia/Tehran";
+const TZ="Asia/Tehran";
+const LOCATIONS={
+tajrish:{name:"تجریش، شمال تهران",lat:35.8047,lon:51.4280},
+poonak:{name:"پونک، غرب تهران",lat:35.7545,lon:51.3310},
+rey:{name:"شهرری، جنوب تهران",lat:35.5938,lon:51.4390},
+resalat:{name:"میدان رسالت، شرق تهران",lat:35.7388,lon:51.4945}
+};
+let selectedLocation=LOCATIONS.tajrish;
 const fa=n=>new Intl.NumberFormat("fa-IR",{maximumFractionDigits:1}).format(n);
 const clock=s=>s?new Intl.DateTimeFormat("fa-IR",{hour:"2-digit",minute:"2-digit",timeZone:TZ}).format(new Date(s)):"—";
 const date=s=>new Intl.DateTimeFormat("fa-IR",{weekday:"long",day:"numeric",month:"long",timeZone:TZ}).format(new Date(s));
@@ -12,7 +19,7 @@ function buildUrl(base,params){const u=new URL(base);Object.entries(params).forE
 async function json(url){const r=await fetch(url);if(!r.ok)throw Error("HTTP "+r.status);return r.json()}
 function renderWeather(d){
 const c=d.current,h=d.hourly,dy=d.daily;
-$("temp").textContent=fa(c.temperature_2m);$("weatherIcon").textContent=icon(c.weather_code);$("condition").textContent=weatherText(c.weather_code);$("feels").textContent="دمای احساسی: "+val(c.apparent_temperature,"°")+" · رطوبت "+val(c.relative_humidity_2m,"%");
+$("currentLocation").textContent="📍 "+selectedLocation.name;$("temp").textContent=fa(c.temperature_2m);$("weatherIcon").textContent=icon(c.weather_code);$("condition").textContent=weatherText(c.weather_code);$("feels").textContent="دمای احساسی: "+val(c.apparent_temperature,"°")+" · رطوبت "+val(c.relative_humidity_2m,"%");
 $("todayMax").textContent=val(dy.temperature_2m_max[0],"°");$("todayMin").textContent=val(dy.temperature_2m_min[0],"°");$("dateNow").textContent=date(c.time);$("sunrise").textContent=clock(dy.sunrise[0]);$("sunset").textContent=clock(dy.sunset[0]);$("daylight").textContent="طول روز: "+fa((dy.daylight_duration[0]/3600).toFixed(1))+" ساعت";
 $("weatherUpdated").textContent="زمان داده: "+clock(c.time);
 const windDir=c.wind_direction_10m;
@@ -82,11 +89,11 @@ $("airUpdated").textContent="زمان داده: "+clock(c.time);
 }
 async function load(){
 $("refresh").disabled=true;$("connection").textContent="در حال دریافت داده‌ها…";
-const weatherParams={latitude:LAT,longitude:LON,timezone:TZ,forecast_days:7,wind_speed_unit:"kmh",temperature_unit:"celsius",
+const weatherParams={latitude:selectedLocation.lat,longitude:selectedLocation.lon,timezone:TZ,forecast_days:7,wind_speed_unit:"kmh",temperature_unit:"celsius",
 current:["temperature_2m","relative_humidity_2m","apparent_temperature","is_day","precipitation","rain","showers","snowfall","weather_code","cloud_cover","pressure_msl","surface_pressure","wind_speed_10m","wind_direction_10m","wind_gusts_10m",],
 hourly:["temperature_2m","relative_humidity_2m","dew_point_2m","apparent_temperature","precipitation_probability","precipitation","rain","showers","snowfall","snow_depth","weather_code","pressure_msl","surface_pressure","cloud_cover","cloud_cover_low","cloud_cover_mid","cloud_cover_high","visibility","evapotranspiration","et0_fao_evapotranspiration","vapour_pressure_deficit","wind_speed_10m","wind_direction_10m","wind_gusts_10m","uv_index","uv_index_clear_sky","is_day","sunshine_duration","wet_bulb_temperature_2m","cape","freezing_level_height","boundary_layer_height","shortwave_radiation","direct_radiation","diffuse_radiation"],
 daily:["weather_code","temperature_2m_max","temperature_2m_min","temperature_2m_mean","apparent_temperature_max","apparent_temperature_min","sunrise","sunset","daylight_duration","sunshine_duration","uv_index_max","uv_index_clear_sky_max","precipitation_sum","rain_sum","showers_sum","snowfall_sum","precipitation_hours","precipitation_probability_max","wind_speed_10m_max","wind_gusts_10m_max","wind_direction_10m_dominant","shortwave_radiation_sum","et0_fao_evapotranspiration","moonrise","moonset"]};
-const airParams={latitude:LAT,longitude:LON,timezone:TZ,forecast_days:5,domains:"auto",current:["us_aqi","european_aqi","pm10","pm2_5","carbon_monoxide","nitrogen_dioxide","sulphur_dioxide","ozone","aerosol_optical_depth","dust","uv_index","uv_index_clear_sky"],hourly:["us_aqi","european_aqi","pm10","pm2_5","carbon_monoxide","nitrogen_dioxide","sulphur_dioxide","ozone","aerosol_optical_depth","dust","uv_index","uv_index_clear_sky"]};
+const airParams={latitude:selectedLocation.lat,longitude:selectedLocation.lon,timezone:TZ,forecast_days:5,domains:"auto",current:["us_aqi","european_aqi","pm10","pm2_5","carbon_monoxide","nitrogen_dioxide","sulphur_dioxide","ozone","aerosol_optical_depth","dust","uv_index","uv_index_clear_sky"],hourly:["us_aqi","european_aqi","pm10","pm2_5","carbon_monoxide","nitrogen_dioxide","sulphur_dioxide","ozone","aerosol_optical_depth","dust","uv_index","uv_index_clear_sky"]};
 try{
 const results=await Promise.allSettled([json(buildUrl("https://api.open-meteo.com/v1/forecast",weatherParams)),json(buildUrl("https://air-quality-api.open-meteo.com/v1/air-quality",airParams))]);
 if(results[0].status!=="fulfilled")throw results[0].reason;
@@ -98,6 +105,6 @@ else{$("airSummary").innerHTML='<div class="aqi-sub">داده کیفیت هوا 
 }catch(e){$("connection").textContent="خطا در دریافت پیش‌بینی";$("connection").style.color="var(--red)";$("alerts").innerHTML='<div class="alert warn">ارتباط با Open-Meteo برقرار نشد. اتصال اینترنت را بررسی و دوباره تلاش کنید. ('+String(e.message||e)+')</div>'}
 finally{$("refresh").disabled=false}
 }
-$("refresh").addEventListener("click",load);
+$("refresh").addEventListener("click",load);\n$("locationSelect").addEventListener("change",e=>{selectedLocation=LOCATIONS[e.target.value]||LOCATIONS.tajrish;load()});
 $("dateNow").textContent=date(new Date().toISOString());
 load();
