@@ -105,6 +105,7 @@ else{$("airSummary").innerHTML='<div class="aqi-sub">داده کیفیت هوا 
 }catch(e){$("connection").textContent="خطا در دریافت پیش‌بینی";$("connection").style.color="var(--red)";$("alerts").innerHTML='<div class="alert warn">ارتباط با Open-Meteo برقرار نشد. اتصال اینترنت را بررسی و دوباره تلاش کنید. ('+String(e.message||e)+')</div>'}
 finally{$("refresh").disabled=false}
 }
-$("refresh").addEventListener("click",load);\n$("locationSelect").addEventListener("change",e=>{selectedLocation=LOCATIONS[e.target.value]||LOCATIONS.tajrish;load()});
+$("refresh").addEventListener("click",load);
+$("locationSelect").addEventListener("change",e=>{selectedLocation=LOCATIONS[e.target.value]||LOCATIONS.tajrish;load()});
 $("dateNow").textContent=date(new Date().toISOString());
 load();
