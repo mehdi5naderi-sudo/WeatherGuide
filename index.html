@@ -8,11 +8,11 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header class="header"><div class="brand"><div class="logo">☀</div><div><b>WeatherGuide</b><small>داشبورد جامع هواشناسی تهران</small></div></div><div class="head-actions"><span id="connection" class="connection">در حال اتصال…</span><button id="refresh" class="refresh" title="به‌روزرسانی داده‌ها">⟳ <span>به‌روزرسانی</span></button></div></header>
+<header class="header"><div class="brand"><div class="logo">☀</div><div><b>WeatherGuide</b><small>داشبورد جامع هواشناسی تهران</small></div></div><label class="location-picker" for="locationSelect"><span>📍 منطقه</span><select id="locationSelect" aria-label="انتخاب منطقه تهران"><option value="tajrish">تجریش</option><option value="poonak">پونک</option><option value="rey">شهرری</option><option value="resalat">میدان رسالت</option></select></label><div class="head-actions"><span id="connection" class="connection">در حال اتصال…</span><button id="refresh" class="refresh" title="به‌روزرسانی داده‌ها">⟳ <span>به‌روزرسانی</span></button></div></header>
 <main class="container">
 <section class="hero">
 <div class="hero-main"><div class="eyebrow">وضعیت فعلی · تهران</div><div class="hero-temp"><span id="temp">--</span><small>°C</small><span id="weatherIcon" class="hero-icon">🌤️</span></div><h1 id="condition">در حال دریافت اطلاعات…</h1><p id="feels">دمای احساسی: --°</p><div class="hi-low"><span>بیشینه <b id="todayMax">--°</b></span><span>کمینه <b id="todayMin">--°</b></span></div></div>
-<div class="hero-side"><div class="date" id="dateNow">—</div><div class="location">📍 تهران، ایران</div><div class="sun-times"><div><span>طلوع خورشید</span><b id="sunrise">--:--</b></div><div><span>غروب خورشید</span><b id="sunset">--:--</b></div></div><div class="daylight" id="daylight">طول روز: —</div></div>
+<div class="hero-side"><div class="date" id="dateNow">—</div><div class="location" id="currentLocation">📍 تجریش، شمال تهران</div><div class="sun-times"><div><span>طلوع خورشید</span><b id="sunrise">--:--</b></div><div><span>غروب خورشید</span><b id="sunset">--:--</b></div></div><div class="daylight" id="daylight">طول روز: —</div></div>
 </section>
 <section class="section"><div class="section-title"><div><span class="eyebrow">شرایط لحظه‌ای</span><h2>جزئیات هوا</h2></div><small id="weatherUpdated">—</small></div><div id="currentGrid" class="metric-grid"></div></section>
 <section class="section"><div class="section-title"><div><span class="eyebrow">روند کوتاه‌مدت</span><h2>پیش‌بینی ساعتی · ۲۴ ساعت آینده</h2></div><small>به وقت تهران</small></div><div id="hourly" class="hourly"></div></section>
