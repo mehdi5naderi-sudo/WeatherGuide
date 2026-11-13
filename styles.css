@@ -11,3 +11,24 @@
 .location-picker select:focus{border-color:var(--blue);box-shadow:0 0 0 2px #80bdff22}
 @media(max-width:700px){.header{gap:8px}.brand{gap:7px}.brand small{font-size:9px}.location-picker{gap:4px;font-size:10px}.location-picker select{min-width:105px;max-width:118px;padding:7px 5px;font-size:11px}}
 @media(max-width:380px){.header{padding:0 8px}.location-picker span{display:none}.location-picker select{min-width:100px}}
+
+
+/* Complete Open-Meteo API data explorer */
+.complete-section{margin-top:32px}
+.complete-data{display:grid;gap:14px}
+.api-response{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
+.api-response h3{font-size:15px;margin:0 0 10px;color:var(--blue)}
+.api-group{border:1px solid var(--line);border-radius:11px;margin-top:8px;overflow:hidden;background:#0d1a2a}
+.api-group summary{cursor:pointer;padding:12px 14px;font-weight:700;font-size:12px;display:flex;justify-content:space-between;gap:12px;list-style:none}
+.api-group summary::-webkit-details-marker{display:none}
+.api-group summary:after{content:"＋";color:var(--blue);font-size:15px}
+.api-group[open] summary:after{content:"−"}
+.api-group summary span{color:var(--muted);font-weight:400}
+.api-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:0 9px 10px}
+.api-field{min-width:0;background:var(--panel2);border:1px solid #263b55;border-radius:9px;padding:9px;display:flex;flex-direction:column;gap:4px}
+.api-field b{font-size:10px;color:var(--muted);direction:ltr;text-align:right;overflow-wrap:anywhere}
+.api-field strong{font-size:12px;direction:ltr;text-align:right;overflow-wrap:anywhere}
+.api-field small{font-size:9px;color:#8299b3;direction:ltr;text-align:right}
+.api-group pre{margin:0;padding:12px;max-height:65vh;overflow:auto;direction:ltr;text-align:left;white-space:pre;font:11px/1.6 ui-monospace,Consolas,monospace;color:#cfe2f8;background:#07111e}
+.api-loading{padding:18px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:12px}
+@media(max-width:700px){.api-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.api-response{padding:10px}.api-group pre{font-size:10px}}
