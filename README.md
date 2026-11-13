@@ -24,5 +24,11 @@ The app is static and can be hosted on GitHub Pages. No API key is required for 
 - styles.css — responsive dashboard styling
 - app.js — Open-Meteo requests, rendering and alert rules
 
+## Complete API data explorer
+- Requests a broad set of documented Open-Meteo forecast variables, including precipitation types/probabilities, soil, radiation, atmospheric stability, pressure-level and wind-height data where supported.
+- Requests the documented air-quality and pollutant variables, including AQI sub-indices, gases, dust, aerosols and pollen where available.
+- Shows every returned API field, units, metadata and the full raw JSON/time series for the selected Tehran point.
+- Availability depends on the selected model, region and season; missing model variables are not fabricated.
+
 ## Notes
 Forecast and air-quality values are model estimates, not direct observations from every street or a substitute for official warnings. Some variables may be unavailable at certain times or locations; unavailable values are displayed as dashes.
