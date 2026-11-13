@@ -79,7 +79,7 @@ $("airSummary").innerHTML='<span class="aqi-dot"></span><div><div class="aqi-lab
 $("airGrid").innerHTML="";
 const times=a.hourly?.time||[],values=a.hourly?.us_aqi||[];
 const now=new Date(c.time||Date.now()).getTime();
-const upcoming=times.map((t,i)=>({t,v:values[i]})).filter(x=>new Date(x.t).getTime()>now&&x.v!=null).slice(0,6);
+const upcoming=times.map((t,i)=>({t,v:values[i]})).filter(x=>new Date(x.t).getTime()>now&&x.v!=null).slice(0,48);
 $("airForecast").innerHTML=upcoming.length?upcoming.map(x=>{
  const v=x.v,cat=v<=50?"خوب":v<=100?"متوسط":v<=150?"حساس":v<=200?"ناسالم":v<=300?"بسیار ناسالم":"خطرناک";
  return '<div class="aqi-hour"><span>'+clock(x.t)+'</span><b>'+fa(v)+'</b><small>'+cat+'</small></div>';
