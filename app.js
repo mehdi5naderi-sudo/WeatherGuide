@@ -7,6 +7,7 @@ rey:{name:"شهرری، جنوب تهران",lat:35.5938,lon:51.4390},
 resalat:{name:"میدان رسالت، شرق تهران",lat:35.7388,lon:51.4945}
 };
 let selectedLocation=LOCATIONS.tajrish;
+let lastWeatherResponse=null,lastAirResponse=null;
 const fa=n=>new Intl.NumberFormat("fa-IR",{maximumFractionDigits:1}).format(n);
 const clock=s=>s?new Intl.DateTimeFormat("fa-IR",{hour:"2-digit",minute:"2-digit",timeZone:TZ}).format(new Date(s)):"—";
 const date=s=>new Intl.DateTimeFormat("fa-IR",{weekday:"long",day:"numeric",month:"long",timeZone:TZ}).format(new Date(s));
@@ -91,17 +92,17 @@ async function load(){
 $("refresh").disabled=true;$("connection").textContent="در حال دریافت داده‌ها…";
 const weatherParams={latitude:selectedLocation.lat,longitude:selectedLocation.lon,timezone:TZ,forecast_days:7,wind_speed_unit:"kmh",temperature_unit:"celsius",
 current:["temperature_2m","relative_humidity_2m","apparent_temperature","is_day","precipitation","rain","showers","snowfall","weather_code","cloud_cover","pressure_msl","surface_pressure","wind_speed_10m","wind_direction_10m","wind_gusts_10m",],
-hourly:["temperature_2m","relative_humidity_2m","dew_point_2m","apparent_temperature","precipitation_probability","precipitation","rain","showers","snowfall","snow_depth","weather_code","pressure_msl","surface_pressure","cloud_cover","cloud_cover_low","cloud_cover_mid","cloud_cover_high","visibility","evapotranspiration","et0_fao_evapotranspiration","vapour_pressure_deficit","wind_speed_10m","wind_direction_10m","wind_gusts_10m","uv_index","uv_index_clear_sky","is_day","sunshine_duration","wet_bulb_temperature_2m","cape","freezing_level_height","boundary_layer_height","shortwave_radiation","direct_radiation","diffuse_radiation"],
-daily:["weather_code","temperature_2m_max","temperature_2m_min","temperature_2m_mean","apparent_temperature_max","apparent_temperature_min","sunrise","sunset","daylight_duration","sunshine_duration","uv_index_max","uv_index_clear_sky_max","precipitation_sum","rain_sum","showers_sum","snowfall_sum","precipitation_hours","precipitation_probability_max","wind_speed_10m_max","wind_gusts_10m_max","wind_direction_10m_dominant","shortwave_radiation_sum","et0_fao_evapotranspiration","moonrise","moonset"]};
+hourly:["temperature_2m","relative_humidity_2m","dew_point_2m","apparent_temperature","precipitation_probability","precipitation","rain","showers","snowfall","snow_depth","weather_code","pressure_msl","surface_pressure","cloud_cover","cloud_cover_low","cloud_cover_mid","cloud_cover_high","visibility","evapotranspiration","et0_fao_evapotranspiration","vapour_pressure_deficit","wind_speed_10m","wind_direction_10m","wind_gusts_10m","uv_index","uv_index_clear_sky","is_day","sunshine_duration","wet_bulb_temperature_2m","cape","freezing_level_height","boundary_layer_height","shortwave_radiation","direct_radiation","diffuse_radiation","direct_normal_irradiance","global_tilted_irradiance","terrestrial_radiation","shortwave_radiation_instant","direct_radiation_instant","diffuse_radiation_instant","direct_normal_irradiance_instant","global_tilted_irradiance_instant","terrestrial_radiation_instant","precipitation_type","rain_probability","snowfall_probability","freezing_rain_probability","ice_pellets_probability","thunderstorm_probability","runoff","snowfall_water_equivalent","snow_depth_water_equivalent","total_column_integrated_water_vapour","lifted_index","convective_inhibition","lightning_potential","lightning_density","surface_temperature","mass_density_8m","snowfall_height","convective_cloud_base","convective_cloud_top","updraft","albedo","k_index","roughness_length","soil_temperature_0cm","soil_temperature_6cm","soil_temperature_18cm","soil_temperature_54cm","soil_temperature_162cm","soil_moisture_0_to_1cm","soil_moisture_1_to_3cm","soil_moisture_3_to_9cm","soil_moisture_9_to_27cm","soil_moisture_27_to_81cm","soil_moisture_81_to_243cm","temperature_1000hPa","temperature_925hPa","temperature_850hPa","temperature_700hPa","temperature_500hPa","dew_point_1000hPa","dew_point_850hPa","relative_humidity_1000hPa","relative_humidity_850hPa","cloud_cover_1000hPa","cloud_cover_850hPa","wind_speed_1000hPa","wind_speed_850hPa","wind_direction_1000hPa","wind_direction_850hPa","geopotential_height_1000hPa","geopotential_height_850hPa","vertical_velocity_850hPa"],
+daily:["weather_code","temperature_2m_max","temperature_2m_min","temperature_2m_mean","apparent_temperature_max","apparent_temperature_min","sunrise","sunset","daylight_duration","sunshine_duration","uv_index_max","uv_index_clear_sky_max","precipitation_sum","rain_sum","showers_sum","snowfall_sum","precipitation_hours","precipitation_probability_max","wind_speed_10m_max","wind_gusts_10m_max","wind_direction_10m_dominant","shortwave_radiation_sum","et0_fao_evapotranspiration","moonrise","moonset","temperature_2m_mean","apparent_temperature_max","apparent_temperature_min","uv_index_clear_sky_max","rain_sum","showers_sum","snowfall_sum","wind_direction_10m_dominant"]};
 const airParams={latitude:selectedLocation.lat,longitude:selectedLocation.lon,timezone:TZ,forecast_days:5,domains:"auto",current:["us_aqi","european_aqi","pm10","pm2_5","carbon_monoxide","nitrogen_dioxide","sulphur_dioxide","ozone","aerosol_optical_depth","dust","uv_index","uv_index_clear_sky"],hourly:["us_aqi","european_aqi","pm10","pm2_5","carbon_monoxide","nitrogen_dioxide","sulphur_dioxide","ozone","aerosol_optical_depth","dust","uv_index","uv_index_clear_sky"]};
 try{
 const results=await Promise.allSettled([json(buildUrl("https://api.open-meteo.com/v1/forecast",weatherParams)),json(buildUrl("https://air-quality-api.open-meteo.com/v1/air-quality",airParams))]);
 if(results[0].status!=="fulfilled")throw results[0].reason;
-renderWeather(results[0].value);
+lastWeatherResponse=results[0].value;lastAirResponse=results[1].status==="fulfilled"?results[1].value:null;renderWeather(results[0].value);renderCompleteData();
 $("lastUpdated").textContent="آخرین دریافت: "+stamp();
 $("connection").textContent="● داده هواشناسی دریافت شد";$("connection").style.color="var(--green)";
-if(results[1].status==="fulfilled")renderAir(results[1].value);
-else{$("airSummary").innerHTML='<div class="aqi-sub">داده کیفیت هوا فعلاً در دسترس نیست؛ سایر بخش‌های هواشناسی به‌روز هستند.</div>';$("airGrid").innerHTML="";$("airUpdated").textContent="خطا در دریافت";}
+if(results[1].status==="fulfilled"){renderAir(results[1].value);renderCompleteData();}
+else{$("airSummary").innerHTML='<div class="aqi-sub">داده کیفیت هوا فعلاً در دسترس نیست؛ سایر بخش‌های هواشناسی به‌روز هستند.</div>';$("airGrid").innerHTML="";$("airUpdated").textContent="خطا در دریافت";renderCompleteData();}
 }catch(e){$("connection").textContent="خطا در دریافت پیش‌بینی";$("connection").style.color="var(--red)";$("alerts").innerHTML='<div class="alert warn">ارتباط با Open-Meteo برقرار نشد. اتصال اینترنت را بررسی و دوباره تلاش کنید. ('+String(e.message||e)+')</div>'}
 finally{$("refresh").disabled=false}
 }
@@ -109,3 +110,28 @@ $("refresh").addEventListener("click",load);
 $("locationSelect").addEventListener("change",e=>{selectedLocation=LOCATIONS[e.target.value]||LOCATIONS.tajrish;load()});
 $("dateNow").textContent=date(new Date().toISOString());
 load();
+
+
+// Complete API explorer: every returned key, unit, metadata field and full time series.
+function renderCompleteData(){
+ const root=$("completeData"); if(!root||!lastWeatherResponse)return;
+ const sections=[{title:"پاسخ کامل API هواشناسی",data:lastWeatherResponse},{title:"پاسخ کامل API کیفیت هوا",data:lastAirResponse}].filter(x=>x.data);
+ const esc=x=>String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ root.innerHTML=sections.map(section=>{
+  const d=section.data;
+  const groups=Object.keys(d).filter(k=>d[k]&&typeof d[k]==="object"&&!Array.isArray(d[k]));
+  const summaries=groups.map(k=>{
+   const obj=d[k],units=d[k+"_units"]||{};
+   const keys=Object.keys(obj);
+   const cards=keys.map(key=>{
+    const v=obj[key],unit=units[key]||"";
+    const sample=Array.isArray(v)?v.slice(0,3).map(x=>x==null?"—":x).join(" · "):v;
+    return '<div class="api-field"><b>'+esc(key)+'</b><strong>'+esc(sample)+'</strong><small>'+esc(unit)+(Array.isArray(v)?' · '+fa(v.length)+' مقدار':'')+'</small></div>';
+   }).join("");
+   return '<details class="api-group" '+(k==="current"?"open":"")+'><summary>'+esc(k)+' <span>'+fa(keys.length)+' فیلد</span></summary><div class="api-fields">'+cards+'</div></details>';
+  }).join("");
+  const meta=Object.keys(d).filter(k=>!groups.includes(k)&&!k.endsWith("_units"));
+  const metadata=meta.map(k=>'<div class="api-field"><b>'+esc(k)+'</b><strong>'+esc(typeof d[k]==="object"?JSON.stringify(d[k]):d[k])+'</strong></div>').join("");
+  return '<div class="api-response"><h3>'+section.title+'</h3>'+summaries+(metadata?'<details class="api-group"><summary>فراداده و مشخصات پاسخ <span>'+fa(meta.length)+' مورد</span></summary><div class="api-fields">'+metadata+'</div></details>':'')+'<details class="api-group raw"><summary>JSON خام و کامل (تمام مقادیر و همه ساعات) <span>نمایش / بستن</span></summary><pre>'+esc(JSON.stringify(d,null,2))+'</pre></details></div>';
+ }).join("");
+}
