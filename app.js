@@ -1,137 +1,58 @@
 const $=id=>document.getElementById(id);
 const TZ="Asia/Tehran";
 const LOCATIONS={
-tajrish:{name:"تجریش، شمال تهران",lat:35.8047,lon:51.4280},
-poonak:{name:"پونک، غرب تهران",lat:35.7545,lon:51.3310},
-rey:{name:"شهرری، جنوب تهران",lat:35.5938,lon:51.4390},
-resalat:{name:"میدان رسالت، شرق تهران",lat:35.7388,lon:51.4945}
+ tajrish:{name:"تجریش",lat:35.8047,lon:51.4280},
+ poonak:{name:"پونک",lat:35.7545,lon:51.3310},
+ rey:{name:"شهرری",lat:35.5938,lon:51.4390},
+ resalat:{name:"میدان رسالت",lat:35.7388,lon:51.4945}
 };
 let selectedLocation=LOCATIONS.tajrish;
-let lastWeatherResponse=null,lastAirResponse=null;
-const fa=n=>new Intl.NumberFormat("fa-IR",{maximumFractionDigits:1}).format(n);
-const clock=s=>s?new Intl.DateTimeFormat("fa-IR",{hour:"2-digit",minute:"2-digit",timeZone:TZ}).format(new Date(s)):"—";
+const fa=n=>new Intl.NumberFormat("fa-IR",{maximumFractionDigits:0}).format(n);
+const time=s=>new Intl.DateTimeFormat("fa-IR",{hour:"2-digit",minute:"2-digit",timeZone:TZ}).format(new Date(s));
 const date=s=>new Intl.DateTimeFormat("fa-IR",{weekday:"long",day:"numeric",month:"long",timeZone:TZ}).format(new Date(s));
-const stamp=()=>new Intl.DateTimeFormat("fa-IR",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:TZ}).format(new Date());
-const val=(v,u="")=>v==null||!Number.isFinite(Number(v))?"—":fa(v)+u;
-const weatherText=c=>({0:"آسمان صاف",1:"عمدتاً صاف",2:"نیمه‌ابری",3:"ابری",45:"مه",48:"مه یخ‌زده",51:"نم‌نم باران ضعیف",53:"نم‌نم باران",55:"نم‌نم باران شدید",56:"باران یخ‌زن ضعیف",57:"باران یخ‌زن",61:"باران ضعیف",63:"باران",65:"باران شدید",66:"باران یخ‌زن ضعیف",67:"باران یخ‌زن شدید",71:"برف ضعیف",73:"بارش برف",75:"برف شدید",77:"دانه‌های برف",80:"رگبار ضعیف",81:"رگبار",82:"رگبار شدید",85:"رگبار برف",86:"رگبار برف شدید",95:"رعدوبرق",96:"رعدوبرق و تگرگ",99:"رعدوبرق شدید"})[c]||"وضعیت متغیر";
-const icon=c=>c===0?"☀️":c<=2?"🌤️":c===3?"☁️":c===45||c===48?"🌫️":[51,53,55,56,57,61,63,65,66,67,80,81,82].includes(c)?"🌧️":[71,73,75,77,85,86].includes(c)?"❄️":[95,96,99].includes(c)?"⛈️":"🌥️";
-const metric=(label,value,sub="")=>'<div class="metric"><div class="m-label">'+label+'</div><div class="m-value">'+value+'</div><div class="m-sub">'+sub+'</div></div>';
-function buildUrl(base,params){const u=new URL(base);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,Array.isArray(v)?v.join(","):v));return u.toString()}
-async function json(url){const r=await fetch(url);if(!r.ok)throw Error("HTTP "+r.status);return r.json()}
-function renderWeather(d){
-const c=d.current,h=d.hourly,dy=d.daily;
-$("currentLocation").textContent="📍 "+selectedLocation.name;$("temp").textContent=fa(c.temperature_2m);$("weatherIcon").textContent=icon(c.weather_code);$("condition").textContent=weatherText(c.weather_code);$("feels").textContent="دمای احساسی: "+val(c.apparent_temperature,"°")+" · رطوبت "+val(c.relative_humidity_2m,"%");
-$("todayMax").textContent=val(dy.temperature_2m_max[0],"°");$("todayMin").textContent=val(dy.temperature_2m_min[0],"°");$("dateNow").textContent=date(c.time);$("sunrise").textContent=clock(dy.sunrise[0]);$("sunset").textContent=clock(dy.sunset[0]);$("daylight").textContent="طول روز: "+fa((dy.daylight_duration[0]/3600).toFixed(1))+" ساعت";
-$("weatherUpdated").textContent="زمان داده: "+clock(c.time);
-const windDir=c.wind_direction_10m;
-const dirs=["شمال","شمال‌شرق","شرق","جنوب‌شرق","جنوب","جنوب‌غرب","غرب","شمال‌غرب"];
-const direction=dirs[Math.round(windDir/45)%8];
-$("currentGrid").innerHTML=[
-metric("رطوبت نسبی",val(c.relative_humidity_2m,"%"),"درصد رطوبت هوا"),
-metric("نقطه شبنم",val(h.dew_point_2m?.[0],"°"),"دمای اشباع بخار آب"),
-metric("سرعت باد",val(c.wind_speed_10m," km/h"),direction+" · "+val(windDir,"°")),
-metric("تندباد",val(c.wind_gusts_10m," km/h"),"بیشینه لحظه‌ای باد"),
-metric("فشار سطح دریا",val(c.pressure_msl," hPa"),"فشار تصحیح‌شده"),
-metric("فشار ایستگاه",val(c.surface_pressure," hPa"),"فشار در ارتفاع تهران"),
-metric("پوشش ابر",val(c.cloud_cover,"%"),"کل آسمان"),
-metric("بارش فعلی",val(c.precipitation," mm"),"باران "+val(c.rain," mm")+" · رگبار "+val(c.showers," mm")),
-metric("برف",val(c.snowfall," cm"),"بارش برف فعلی"),
-metric("دمای تر",val(h.wet_bulb_temperature_2m?.[0],"°"),"شاخص ترکیبی گرما و رطوبت"),
-metric("تابش فرابنفش",val(h.uv_index?.[0]),"شاخص UV ساعتی"),
-metric("ارتفاع لایه مرزی",val(h.boundary_layer_height?.[0]," m"),"پراکندگی عمودی آلاینده‌ها")
-].join("");
-const now=Date.now(),start=h.time.findIndex(t=>new Date(t).getTime()>=now-3600000);
-const hours=Array.from({length:24},(_,n)=>Math.max(0,start)+n).filter(i=>i<h.time.length);
-$("hourly").innerHTML=hours.map(i=>'<div class="hour"><div class="time">'+(i===hours[0]?"اکنون":clock(h.time[i]))+'</div><div class="icon">'+icon(h.weather_code[i])+'</div><div class="ht">'+val(h.temperature_2m[i],"°")+'</div><div class="rain">💧 '+val(h.precipitation_probability[i],"%")+'</div><div class="wind">باد '+val(h.wind_speed_10m[i])+'</div></div>').join("");
-const max=Math.max(...dy.temperature_2m_max);
-$("daily").innerHTML=dy.time.map((t,i)=>'<div class="day"><div class="day-name">'+(i===0?"امروز":date(t))+'</div><div class="day-icon">'+icon(dy.weather_code[i])+' <span class="day-desc">'+weatherText(dy.weather_code[i])+'</span></div><div class="temps">'+val(dy.temperature_2m_max[i],"°")+'<span>'+val(dy.temperature_2m_min[i],"°")+'</span></div><div class="bar"><i style="width:'+Math.max(4,dy.temperature_2m_max[i]/Math.max(1,max)*100)+'%"></i></div><div class="rainchance">💧 '+val(dy.precipitation_probability_max[i],"%")+'</div></div>').join("");
-$("uv").innerHTML='<div class="uv-head"><div><div class="m-label">بیشترین شاخص UV امروز</div><div class="uv-value">'+val(dy.uv_index_max[0])+'</div></div><div class="uv-caption">'+uvLabel(dy.uv_index_max[0])+'</div></div><div class="uv-scale">'+[0,1,2,3,4].map((x)=>'<i class="'+(dy.uv_index_max[0]>=x*3?"active":"")+'"></i>').join("")+'</div><div class="uv-caption">برای شاخص‌های بالا، سایه، پوشش مناسب و ضدآفتاب توصیه می‌شود.</div>';
-$("extra").innerHTML=[
-metric("طلوع ماه",clock(dy.moonrise?.[0]),"زمان محلی تهران"),
-metric("غروب ماه",clock(dy.moonset?.[0]),"زمان محلی تهران"),
-metric("مدت تابش آفتاب",fa((dy.sunshine_duration[0]/3600).toFixed(1))+" ساعت","تابش مستقیم مؤثر"),
-metric("بارش کل امروز",val(dy.precipitation_sum[0]," mm"),"مجموع باران و برف"),
-metric("ساعات بارندگی",val(dy.precipitation_hours[0]," ساعت"),"در طول روز"),
-metric("بیشینه تندباد",val(dy.wind_gusts_10m_max[0]," km/h"),"پیش‌بینی روزانه"),
-metric("تبخیر و تعرق",val(dy.et0_fao_evapotranspiration?.[0]," mm"),"ET₀ مرجع"),
-metric("تابش خورشیدی",val(dy.shortwave_radiation_sum[0]," MJ/m²"),"انرژی روزانه")
-].join("");
-renderAlerts(d,h,dy);
+function category(v){
+ if(v==null)return {label:"بدون داده",tone:"muted"};
+ if(v<=50)return {label:"خوب",tone:"good"};
+ if(v<=100)return {label:"متوسط",tone:"moderate"};
+ if(v<=150)return {label:"ناسالم برای گروه‌های حساس",tone:"sensitive"};
+ if(v<=200)return {label:"ناسالم",tone:"unhealthy"};
+ if(v<=300)return {label:"بسیار ناسالم",tone:"very"};
+ return {label:"خطرناک",tone:"hazard"};
 }
-function uvLabel(v){return v<3?"کم":v<6?"متوسط":v<8?"زیاد":v<11?"خیلی زیاد":"شدید"}
-function renderAlerts(d,h,dy){
-const a=[];
-const max=dy.temperature_2m_max[0],min=dy.temperature_2m_min[0],gust=dy.wind_gusts_10m_max[0],rain=dy.precipitation_probability_max[0],uv=dy.uv_index_max[0];
-if(max>=36)a.push(["گرمای قابل توجه","بیشینه دما "+fa(max)+" درجه؛ در ساعات گرم روز از فعالیت سنگین در فضای باز پرهیز کنید.","warn"]);
-if(min<=2)a.push(["هوای سرد","کمینه دما "+fa(min)+" درجه؛ پوشش مناسب در ساعات شب و صبح لازم است.","warn"]);
-if(gust>=50)a.push(["تندباد","سرعت تندباد ممکن است به "+fa(gust)+" کیلومتر بر ساعت برسد؛ اشیای سبک را ایمن کنید.","warn"]);
-if(rain>=50)a.push(["احتمال بارندگی","بیشترین احتمال بارش امروز "+fa(rain)+" درصد است.","warn"]);
-if(uv>=6)a.push(["تابش فرابنفش بالا","بیشینه UV برابر "+fa(uv)+" است؛ از ضدآفتاب و سایه استفاده کنید.","warn"]);
-const vis=d.hourly.visibility?.[0];if(vis!=null&&vis<2000)a.push(["کاهش دید","دید افقی کمتر از ۲ کیلومتر گزارش شده است؛ رانندگی با احتیاط.","warn"]);
-if(!a.length)a.push(["شرایط جوی نسبتاً آرام","در داده‌های امروز آستانه هشدار مهمی شناسایی نشد. تغییرات ساعتی را دنبال کنید.","good"]);
-$("alerts").innerHTML=a.map(x=>'<div class="alert '+x[2]+'"><b>'+x[0]+'</b><p>'+x[1]+'</p></div>').join("");
-}
-function renderAir(a){
-const c=a.current,h=a.hourly;
-const aq=c.us_aqi??c.european_aqi;
-const label=aq==null?"نامشخص":aq<=50?"خوب":aq<=100?"متوسط":aq<=150?"ناسالم برای گروه‌های حساس":aq<=200?"ناسالم":aq<=300?"بسیار ناسالم":"خطرناک";
-$("airSummary").innerHTML='<span class="aqi-dot"></span><div><div class="aqi-label">شاخص کیفیت هوا · '+label+'</div><div class="aqi-sub">مبنای نمایش: '+(c.us_aqi!=null?"US AQI":"European AQI")+'</div></div><strong class="aqi-number">'+val(aq)+'</strong>';
-$("airGrid").innerHTML=[
-metric("PM₂.₅",val(c.pm2_5," µg/m³"),"ذرات ریز معلق"),
-metric("PM₁₀",val(c.pm10," µg/m³"),"ذرات معلق درشت‌تر"),
-metric("ازن سطح زمین",val(c.ozone," µg/m³"),"O₃"),
-metric("دی‌اکسید نیتروژن",val(c.nitrogen_dioxide," µg/m³"),"NO₂"),
-metric("دی‌اکسید گوگرد",val(c.sulphur_dioxide," µg/m³"),"SO₂"),
-metric("مونوکسید کربن",val(c.carbon_monoxide," µg/m³"),"CO"),
-metric("گردوغبار",val(c.aerosol_optical_depth),"عمق نوری آئروسل"),
-metric("گرده توس",val(c.alder_pollen??c.birch_pollen," grains/m³"),"در صورت موجود بودن داده")
-].join("");
-$("airUpdated").textContent="زمان داده: "+clock(c.time);
+function url(){
+ const p=new URLSearchParams({latitude:selectedLocation.lat,longitude:selectedLocation.lon,current:"us_aqi",hourly:"us_aqi",timezone:TZ,forecast_days:3});
+ return "https://air-quality-api.open-meteo.com/v1/air-quality?"+p.toString();
 }
 async function load(){
-$("refresh").disabled=true;$("connection").textContent="در حال دریافت داده‌ها…";
-const weatherParams={latitude:selectedLocation.lat,longitude:selectedLocation.lon,timezone:TZ,forecast_days:7,wind_speed_unit:"kmh",temperature_unit:"celsius",
-current:["temperature_2m","relative_humidity_2m","apparent_temperature","is_day","precipitation","rain","showers","snowfall","weather_code","cloud_cover","pressure_msl","surface_pressure","wind_speed_10m","wind_direction_10m","wind_gusts_10m",],
-hourly:["temperature_2m","relative_humidity_2m","dew_point_2m","apparent_temperature","precipitation_probability","precipitation","rain","showers","snowfall","snow_depth","weather_code","pressure_msl","surface_pressure","cloud_cover","cloud_cover_low","cloud_cover_mid","cloud_cover_high","visibility","evapotranspiration","et0_fao_evapotranspiration","vapour_pressure_deficit","wind_speed_10m","wind_direction_10m","wind_gusts_10m","uv_index","uv_index_clear_sky","is_day","sunshine_duration","wet_bulb_temperature_2m","cape","freezing_level_height","boundary_layer_height","shortwave_radiation","direct_radiation","diffuse_radiation","direct_normal_irradiance","global_tilted_irradiance","terrestrial_radiation","shortwave_radiation_instant","direct_radiation_instant","diffuse_radiation_instant","direct_normal_irradiance_instant","global_tilted_irradiance_instant","terrestrial_radiation_instant","precipitation_type","rain_probability","snowfall_probability","freezing_rain_probability","ice_pellets_probability","thunderstorm_probability","runoff","snowfall_water_equivalent","snow_depth_water_equivalent","total_column_integrated_water_vapour","lifted_index","convective_inhibition","lightning_potential","lightning_density","surface_temperature","mass_density_8m","snowfall_height","convective_cloud_base","convective_cloud_top","updraft","albedo","k_index","roughness_length","soil_temperature_0cm","soil_temperature_6cm","soil_temperature_18cm","soil_temperature_54cm","soil_temperature_162cm","soil_moisture_0_to_1cm","soil_moisture_1_to_3cm","soil_moisture_3_to_9cm","soil_moisture_9_to_27cm","soil_moisture_27_to_81cm","soil_moisture_81_to_243cm","temperature_1000hPa","temperature_925hPa","temperature_850hPa","temperature_700hPa","temperature_500hPa","dew_point_1000hPa","dew_point_850hPa","relative_humidity_1000hPa","relative_humidity_850hPa","cloud_cover_1000hPa","cloud_cover_850hPa","wind_speed_1000hPa","wind_speed_850hPa","wind_direction_1000hPa","wind_direction_850hPa","geopotential_height_1000hPa","geopotential_height_850hPa","vertical_velocity_850hPa"],
-daily:["weather_code","temperature_2m_max","temperature_2m_min","temperature_2m_mean","apparent_temperature_max","apparent_temperature_min","sunrise","sunset","daylight_duration","sunshine_duration","uv_index_max","uv_index_clear_sky_max","precipitation_sum","rain_sum","showers_sum","snowfall_sum","precipitation_hours","precipitation_probability_max","wind_speed_10m_max","wind_gusts_10m_max","wind_direction_10m_dominant","shortwave_radiation_sum","et0_fao_evapotranspiration","moonrise","moonset","temperature_2m_mean","apparent_temperature_max","apparent_temperature_min","uv_index_clear_sky_max","rain_sum","showers_sum","snowfall_sum","wind_direction_10m_dominant"]};
-const airParams={latitude:selectedLocation.lat,longitude:selectedLocation.lon,timezone:TZ,forecast_days:5,domains:"auto",current:["european_aqi","us_aqi","pm10","pm2_5","carbon_monoxide","nitrogen_dioxide","sulphur_dioxide","ozone","aerosol_optical_depth","dust","uv_index","uv_index_clear_sky","ammonia","alder_pollen","birch_pollen","grass_pollen","mugwort_pollen","olive_pollen","ragweed_pollen"],hourly:["pm10","pm2_5","carbon_monoxide","carbon_dioxide","nitrogen_dioxide","sulphur_dioxide","ozone","aerosol_optical_depth","dust","uv_index","uv_index_clear_sky","ammonia","methane","alder_pollen","birch_pollen","grass_pollen","mugwort_pollen","olive_pollen","ragweed_pollen","formaldehyde","glyoxal","non_methane_volatile_organic_compounds","pm10_wildfires","peroxyacyl_nitrates","secondary_inorganic_aerosol","residential_elementary_carbon","total_elementary_carbon","pm2_5_total_organic_matter","sea_salt_aerosol","nitrogen_monoxide","european_aqi","european_aqi_pm2_5","european_aqi_pm10","european_aqi_nitrogen_dioxide","european_aqi_ozone","european_aqi_sulphur_dioxide","us_aqi","us_aqi_pm2_5","us_aqi_pm10","us_aqi_nitrogen_dioxide","us_aqi_carbon_monoxide","us_aqi_ozone","us_aqi_sulphur_dioxide","is_day"]};
-try{
-const results=await Promise.allSettled([json(buildUrl("https://api.open-meteo.com/v1/forecast",weatherParams)),json(buildUrl("https://air-quality-api.open-meteo.com/v1/air-quality",airParams))]);
-if(results[0].status!=="fulfilled")throw results[0].reason;
-lastWeatherResponse=results[0].value;lastAirResponse=results[1].status==="fulfilled"?results[1].value:null;renderWeather(results[0].value);renderCompleteData();
-$("lastUpdated").textContent="آخرین دریافت: "+stamp();
-$("connection").textContent="● داده هواشناسی دریافت شد";$("connection").style.color="var(--green)";
-if(results[1].status==="fulfilled"){renderAir(results[1].value);renderCompleteData();}
-else{$("airSummary").innerHTML='<div class="aqi-sub">داده کیفیت هوا فعلاً در دسترس نیست؛ سایر بخش‌های هواشناسی به‌روز هستند.</div>';$("airGrid").innerHTML="";$("airUpdated").textContent="خطا در دریافت";renderCompleteData();}
-}catch(e){$("connection").textContent="خطا در دریافت پیش‌بینی";$("connection").style.color="var(--red)";$("alerts").innerHTML='<div class="alert warn">ارتباط با Open-Meteo برقرار نشد. اتصال اینترنت را بررسی و دوباره تلاش کنید. ('+String(e.message||e)+')</div>'}
-finally{$("refresh").disabled=false}
+ const button=$("refresh");button.disabled=true;$("status").textContent="در حال دریافت…";
+ try{
+  const response=await fetch(url());if(!response.ok)throw new Error("HTTP "+response.status);
+  const data=await response.json();
+  const value=data.current?.us_aqi;
+  const state=category(value);
+  $("place").textContent="📍 "+selectedLocation.name;
+  $("currentValue").textContent=value==null?"—":fa(value);
+  $("currentLabel").textContent=state.label;
+  $("currentCard").className="current-card "+state.tone;
+  $("updated").textContent=data.current?.time?"آخرین داده: "+time(data.current.time):"";
+  const times=data.hourly?.time||[],values=data.hourly?.us_aqi||[];
+  const now=new Date(data.current?.time||Date.now()).getTime();
+  const entries=times.map((t,i)=>({t,v:values[i]})).filter(x=>new Date(x.t).getTime()>now&&x.v!=null).slice(0,18);
+  $("forecast").innerHTML=entries.length?entries.map((x,i)=>{
+   const c=category(x.v);
+   return '<div class="forecast-item '+c.tone+'"><span class="forecast-time">'+(i===0?"ساعت بعد":time(x.t))+'</span><b>'+fa(x.v)+'</b><small>'+c.label+'</small></div>';
+  }).join(""):'<p class="empty">پیش‌بینی ساعتی در دسترس نیست.</p>';
+  $("forecastNote").textContent=entries.length?"پیش‌بینی ساعتی شاخص US AQI · به وقت تهران":"";
+  $("status").textContent="● به‌روز شد";
+  $("status").className="status ok";
+  $("received").textContent="دریافت: "+new Intl.DateTimeFormat("fa-IR",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:TZ}).format(new Date());
+ }catch(error){
+  $("status").textContent="خطا در دریافت داده";
+  $("status").className="status error";
+  $("forecast").innerHTML='<p class="empty">ارتباط با سرویس برقرار نشد. دوباره تلاش کنید.</p>';
+  $("currentValue").textContent="—";$("currentLabel").textContent="نامشخص";
+ }finally{button.disabled=false;}
 }
-$("refresh").addEventListener("click",load);
 $("locationSelect").addEventListener("change",e=>{selectedLocation=LOCATIONS[e.target.value]||LOCATIONS.tajrish;load()});
-$("dateNow").textContent=date(new Date().toISOString());
+$("refresh").addEventListener("click",load);
 load();
-
-
-// Complete API explorer: every returned key, unit, metadata field and full time series.
-function renderCompleteData(){
- const root=$("completeData"); if(!root||!lastWeatherResponse)return;
- const sections=[{title:"پاسخ کامل API هواشناسی",data:lastWeatherResponse},{title:"پاسخ کامل API کیفیت هوا",data:lastAirResponse}].filter(x=>x.data);
- const esc=x=>String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
- root.innerHTML=sections.map(section=>{
-  const d=section.data;
-  const groups=Object.keys(d).filter(k=>d[k]&&typeof d[k]==="object"&&!Array.isArray(d[k]));
-  const summaries=groups.map(k=>{
-   const obj=d[k],units=d[k+"_units"]||{};
-   const keys=Object.keys(obj);
-   const cards=keys.map(key=>{
-    const v=obj[key],unit=units[key]||"";
-    const sample=Array.isArray(v)?v.slice(0,3).map(x=>x==null?"—":x).join(" · "):v;
-    return '<div class="api-field"><b>'+esc(key)+'</b><strong>'+esc(sample)+'</strong><small>'+esc(unit)+(Array.isArray(v)?' · '+fa(v.length)+' مقدار':'')+'</small></div>';
-   }).join("");
-   return '<details class="api-group" '+(k==="current"?"open":"")+'><summary>'+esc(k)+' <span>'+fa(keys.length)+' فیلد</span></summary><div class="api-fields">'+cards+'</div></details>';
-  }).join("");
-  const meta=Object.keys(d).filter(k=>!groups.includes(k)&&!k.endsWith("_units"));
-  const metadata=meta.map(k=>'<div class="api-field"><b>'+esc(k)+'</b><strong>'+esc(typeof d[k]==="object"?JSON.stringify(d[k]):d[k])+'</strong></div>').join("");
-  return '<div class="api-response"><h3>'+section.title+'</h3>'+summaries+(metadata?'<details class="api-group"><summary>فراداده و مشخصات پاسخ <span>'+fa(meta.length)+' مورد</span></summary><div class="api-fields">'+metadata+'</div></details>':'')+'<details class="api-group raw"><summary>JSON خام و کامل (تمام مقادیر و همه ساعات) <span>نمایش / بستن</span></summary><pre>'+esc(JSON.stringify(d,null,2))+'</pre></details></div>';
- }).join("");
-}
